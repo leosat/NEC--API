@@ -1,0 +1,148 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>NEC_0.001/lib/NEC/API/MainProto.pm</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:root@localhost" />
+</head>
+
+<body style="background-color: white">
+
+<p><a name="__index__"></a></p>
+<!-- INDEX BEGIN -->
+
+<ul>
+
+	<li><a href="#nec__api__mainproto">NEC::API::MainProto</a></li>
+	<ul>
+
+		<li><a href="#authors_">Authors.</a></li>
+		<li><a href="#summary_">Summary.</a></li>
+		<li><a href="#contents_">Contents.</a></li>
+		<li><a href="#see_also_">See Also.</a></li>
+		<li><a href="#license_">License.</a></li>
+	</ul>
+
+</ul>
+<!-- INDEX END -->
+
+<hr />
+<p>
+</p>
+<h1><a name="nec__api__mainproto">NEC::API::MainProto</a></h1>
+<pre>
+        ________________________________________ _____ ___ __ _ _</pre>
+<p>
+</p>
+<h2><a name="authors_">Authors.</a></h2>
+<p>The binary protocol was reverse-engineered by <strong>Alexey Y. Smirnov</strong> (<a href="mailto:myth@mail.ru">myth@mail.ru</a>),
+the module was originally written by <strong>Leonid E. Satanovsky</strong> (<a href="mailto:satanovskyl@mail.ru">satanovskyl@mail.ru</a>)</p>
+<p>
+</p>
+<h2><a name="summary_">Summary.</a></h2>
+<p>The module provides functionality to compile and parse a binary form 
+of a <strong>subset</strong> of the protocol used by the NEC telephone station.
+It is <strong>supposed to be used by the superior-level code</strong> and, generally, 
+is not expected to be used by the final user, while it doesn't
+handle such abstractions as eg. a connection to the phonestation.</p>
+<p>
+</p>
+<h2><a name="contents_">Contents.</a></h2>
+<dl>
+<dt><strong><a name="item_get_xor_checksum">sub <code>get_xor_checksum($)</code></a></strong>
+
+<p>This function gets one scalar argument: some string of data and returns a 1-byte long
+sequential checksum of all the bytes in the string.</p>
+<dt><strong><a name="item_compile_bin_cmd">sub <code>compile_bin_cmd(@)</code></a></strong>
+
+<p>This function expects a hash of named arguments: cmd, param, value (optional) and 
+returns a scalar string representing its' binary form (see code for binary format details).</p>
+<pre>
+        __________________________________ ________ _____ __ _</pre>
+<pre>
+        Binary request format to read a param value:</pre>
+<pre>
+        #-------------------------------------------------------------
+        # LENGTH IN BITS        | CONTENTS      | COMMENT
+        #-------------------------------------------------------------
+        # 8                     | 0x11          | BEGIN SIGN
+        # 8*1-8*5               | VAR           | ASCII string: command name
+        # 8                     | 0x12          | SEPARATOR
+        # VAR                   | VAR           | ASCII string: param name
+        # 1                     | 0x20          | WHITESPACE CHAR
+        # 8                     | VAR           | Sequential XOR of all the previous bites.
+        #-------------------------------------------------------------</pre>
+<pre>
+        Binary request format to set a param value:</pre>
+<pre>
+        #-------------------------------------------------------------
+        # LENGTH IN BITS        | CONTENTS      | COMMENT
+        #-------------------------------------------------------------
+        # 8                     | 0x11          | BEGIN SIGN
+        # 8*1-8*5               | VAR           | ASCII string: command name
+        # 8                     | 0x12          | SEPARATOR
+        # VAR                   | VAR           | ASCII string: param name
+        # 8                     | 0x12          | SEPARATOR
+        # VAR                   | VAR           | ASCII string: param value
+        # 8                     | 0x2e          | SEPARATOR
+        # 8                     | VAR           | Sequential XOR of all the previous bites.
+        #-------------------------------------------------------------</pre>
+<dt><strong><a name="item_parse_bin_response">sub <code>parse_bin_response($)</code></a></strong>
+
+<p>This function expects a binary representation of the command (see source for details) 
+as its' only scalar argument and returns a reference to a structure 
+of the following form:</p>
+<pre>
+        { 
+                type    =&gt; RESPONSE_TYPE, 
+                data    =&gt; RESPONSE_DATA,
+                cs      =&gt; CHECKSUM
+        }</pre>
+<pre>
+        __________________________________ ________ _____ __ _</pre>
+<pre>
+        Binary response format:</pre>
+<pre>
+        #-------------------------------------------------------------
+        # LENGTH IN BITS        | CONTENTS      | COMMENT
+        #-------------------------------------------------------------
+        # 8                     | VAR           | A number of the following bytes
+        # 8                     | -             | UNKNOWN
+        # 8                     | VAR           | Response type
+        # 8                     | -             | UNKNOWN
+        # VAR                   | VAR           | ASCII string: Response data
+        # 8                     | VAR           | Sequential XOR of all the previous bites.
+        #-------------------------------------------------------------</pre>
+<dt><strong><a name="item_parse_response_data">sub <code>parse_response_data($)</code></a></strong>
+
+<p>Takes a reference to a structure of the following type:</p>
+<pre>
+        { 
+                type    =&gt; RESPONSE_TYPE, 
+                data    =&gt; RESPONSE_DATA,
+                cs      =&gt; CHECKSUM
+        }</pre>
+<p>as its only argument and if the ``type'' is of <strong>RTYPE_DATA_READ_OK</strong> value,
+parses the ``data'' field and adds to the hash the following keys:</p>
+<pre>
+        cmd
+        param   
+        value</pre>
+<p>Returns the same reference it takes as the argument.</p>
+</dl>
+<p>
+</p>
+<h2><a name="see_also_">See Also.</a></h2>
+<pre>
+        NEC::API::Connection
+        NEC::API::Common</pre>
+<p>
+</p>
+<h2><a name="license_">License.</a></h2>
+<pre>
+        The code is distributed under the GPL 2 license.</pre>
+
+</body>
+
+</html>
